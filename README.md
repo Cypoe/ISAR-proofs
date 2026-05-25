@@ -94,6 +94,11 @@ We formalized the general Dialect view framework, proved view representation ind
     * Proves all semantic category `Kernel` laws: `sound`, `decode_view`, `view_eq_decode`, and `decode_eq`.
     * Defines stable addition on the Invariant Layer quotient (`InvariantLayer.add`) and proves that it preserves arithmetic addition.
 
+16. **[ViewUnification.lean](file:///C:/Users/fabi0/Documents/antigravity/joyful-lavoisier/ViewUnification.lean)**:
+    * Defines the general structure `AdmissibleDialect` wrapping a `Dialect` with kernel coherence laws, and compiles it to `.toKernel`.
+    * Defines `KernelIsomorphism` and proves **Isomorphism Unification** (`isomorphism_unification`), showing that dialect observational isomorphisms canonically induce category isomorphisms, with translation morphisms constructed canonically using the substrate as the universal medium.
+    * Proves the **Universal Factorization Theorem** (`universal_factorization_theorem`) under which ZFC/HF-Sets, Quantity arithmetic, TRS, and Bytecode kernels all factor uniquely through `ISAR_Kernel` by terminality.
+
 ---
 
 ## Narratives
@@ -105,7 +110,7 @@ We formalized the general Dialect view framework, proved view representation ind
 
 ## Verification Status
 
-All 15 modules compile successfully with **no errors, no warnings, and no `sorry` statements**.
+All 16 modules compile successfully with **no errors, no warnings, and no `sorry` statements**.
 
 ### Build commands used
 ```powershell
@@ -125,5 +130,6 @@ lean -R . -o ReverseRosetta.olean ReverseRosetta.lean
 lean -R . -o TRSView.olean TRSView.lean
 lean -R . -o BytecodeView.olean BytecodeView.lean
 lean -R . -o QuantityKernel.olean QuantityKernel.lean
+lean -R . -o ViewUnification.olean ViewUnification.lean
 ```
 All files were successfully verified by the Lean 4 typechecker.
