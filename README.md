@@ -133,6 +133,6 @@ lean -R . -o ReverseRosetta.olean ReverseRosetta.lean
 lean -R . -o TRSView.olean TRSView.lean
 lean -R . -o BytecodeView.olean BytecodeView.lean
 lean -R . -o QuantityKernel.olean QuantityKernel.lean
-lean -R . -o ViewUnification.lean ViewUnification.lean
+lean -R . -o ViewUnification.olean ViewUnification.lean
 ```
 All files were successfully verified by the Lean 4 typechecker.
