@@ -15,7 +15,7 @@ We successfully split, implemented, and fully verified the entire five-module co
 2. **[InvariantLayer.lean](file:///C:/Users/fabi0/Documents/antigravity/joyful-lavoisier/InvariantLayer.lean)**:
    * **Operational Equivalence & Quotient**: Defined `OperEq` as joinability (operational equivalence/conversion) on the `ISKSubtype` fragment. Proved it is an equivalence relation and defined the quotient type `InvariantLayer`.
    * **Application Congruence**: Proved `app_congruence` and defined the well-behaved application operator `InvariantLayer.app` on the quotient.
-   * **Canonical Representatives**: Formulated normal-form existence (`HasNF`) and proved it is invariant under operational equivalence. Implemented `nf_of_term` using `Classical.choose` and lifted it to the quotient-level mapping `canonical_rep`.
+   * **Canonical Representatives**: Formulated normal-form existence (`HasNF`) and proved it is invariant under operational equivalence. Implemented `nf_of_term` using `Classical.choose` for the logical specification and connected it constructively at runtime to `cd_loop` using the `@[implemented_by]` complete-development normalization loop, making `canonical_rep` fully computable.
 
 3. **[LambdaFragment.lean](file:///C:/Users/fabi0/Documents/antigravity/joyful-lavoisier/LambdaFragment.lean)**:
    * **Lambda Fragment Definition**: Defined de Bruijn untyped lambda terms `LTerm` and weak beta-reduction `LStep`.
