@@ -43,6 +43,22 @@ abbrev ISAR_Kernel : Kernel where
   view_eq_decode := fun c => OperEq.refl c
   decode_eq := fun _ _ h => h
 
+/-- The computable ISAR kernel parametrized by normalization fuel. -/
+def ComputableISAR_Kernel (fuel : Nat) : Kernel where
+  Carrier := ISKSubtype
+  view_of := id
+  view_eq := OperEq
+  is_equiv := operEqSetoid.iseqv
+  sound := fun _ _ h => h
+  decode := cd_loop_fuel fuel
+  decode_view := fun t => OperEq_cd_loop_fuel fuel t
+  view_eq_decode := fun c => OperEq_cd_loop_fuel fuel c
+  decode_eq := fun c1 c2 h => by
+    have h1 := OperEq_cd_loop_fuel fuel c1
+    have h2 := OperEq_cd_loop_fuel fuel c2
+    exact OperEq.trans h1 (OperEq.trans h (OperEq.symm h2))
+
+
 /--
 A structure-preserving morphism between semantic kernels.
 Must preserve the view mapping and map equivalent carrier elements to equivalent elements.

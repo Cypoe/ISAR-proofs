@@ -2,7 +2,7 @@
 
 This document summarizes the mathematical connection between the symbolic ISAR operational semantics, the quotient-based invariant layer, and the rank-4 tensor semantics backend, along with the set-theoretic interpretation, view pluralism, and structural quantity arithmetic milestones.
 
-## Summary of the Work
+## Summary of Completed Work
 
 ### Phase 1: Core Stack
 We successfully split, implemented, and fully verified the entire five-module codebase:
@@ -16,6 +16,8 @@ We successfully split, implemented, and fully verified the entire five-module co
    * **Operational Equivalence & Quotient**: Defined `OperEq` as joinability (operational equivalence/conversion) on the `ISKSubtype` fragment. Proved it is an equivalence relation and defined the quotient type `InvariantLayer`.
    * **Application Congruence**: Proved `app_congruence` and defined the well-behaved application operator `InvariantLayer.app` on the quotient.
    * **Canonical Representatives**: Formulated normal-form existence (`HasNF`) and proved it is invariant under operational equivalence. Implemented `nf_of_term` using `Classical.choose` for the logical specification and connected it constructively at runtime to `cd_loop` using the `@[implemented_by]` complete-development normalization loop, making `canonical_rep` fully computable.
+   * **Complete Development Termination Proofs**: Defined `term_size` and the `IKTerm` sub-fragment (terms built without duplication). Formally proved `cd_size_le_IK` and `cd_size_lt_IK`, showing that complete development strictly decreases term size for all non-fixed-point terms in this fragment.
+   * **Computable Normalization Loop**: Implemented the fuel-based normalization loop `cd_loop_fuel` and proved that it preserves operational equivalence (`OperEq_cd_loop_fuel`). Proved `cd_loop_fuel_quotient_eq`, proving that the computable loop projects to the exact same element in the `InvariantLayer` quotient as the input term.
 
 3. **[LambdaFragment.lean](file:///C:/Users/fabi0/Documents/antigravity/joyful-lavoisier/LambdaFragment.lean)**:
    * **Lambda Fragment Definition**: Defined de Bruijn untyped lambda terms `LTerm` and weak beta-reduction `LStep`.
@@ -30,6 +32,7 @@ We successfully split, implemented, and fully verified the entire five-module co
 5. **[KernelCategory.lean](file:///C:/Users/fabi0/Documents/antigravity/joyful-lavoisier/KernelCategory.lean)**:
    * **Semantic Kernels Category**: Defined `Kernel` structure and structure-preserving morphisms (`KernelHom`).
    * **Terminal Object**: Formalized `ISAR_Kernel` representing the operational quotient presentation of the ISAR calculus itself.
+   * **Computable ISAR Kernel**: Constructed `ComputableISAR_Kernel (fuel : Nat) : Kernel` using `cd_loop_fuel`. Formally verified all category-theoretic kernel laws constructively (without using `noncomputable` or `Classical.choose`).
    * **Uniqueness (Terminality) Theorem**: Proved `morphism_uniqueness` showing that any structure-preserving morphism from an arbitrary semantic kernel $K$ into `ISAR_Kernel` is observationally equivalent to the canonical decoding morphism.
 
 ---
@@ -114,7 +117,7 @@ All 16 modules compile successfully with **no errors, no warnings, and no `sorry
 
 ### Build commands used
 ```powershell
-$env:LEAN_PATH="."
+$env:LEAN_PATH="C:\Users\fabi0\Documents\antigravity\joyful-lavoisier"
 lean -R . -o ISAR.olean ISAR.lean
 lean -R . -o InvariantLayer.olean InvariantLayer.lean
 lean -R . -o LambdaFragment.olean LambdaFragment.lean
@@ -130,6 +133,6 @@ lean -R . -o ReverseRosetta.olean ReverseRosetta.lean
 lean -R . -o TRSView.olean TRSView.lean
 lean -R . -o BytecodeView.olean BytecodeView.lean
 lean -R . -o QuantityKernel.olean QuantityKernel.lean
-lean -R . -o ViewUnification.olean ViewUnification.lean
+lean -R . -o ViewUnification.lean ViewUnification.lean
 ```
 All files were successfully verified by the Lean 4 typechecker.
