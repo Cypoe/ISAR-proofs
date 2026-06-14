@@ -1,6 +1,5 @@
 import ISARMatrices
 import InvariantLayer
-import ViewUnification
 
 namespace ISAR
 

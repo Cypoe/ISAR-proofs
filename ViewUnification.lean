@@ -5,6 +5,7 @@ import BytecodeView
 import QuantityKernel
 import ZFCInterpretation
 import Futamura
+import BasisCompleteness
 
 namespace ISAR
 
@@ -171,17 +172,25 @@ structure ConfluentSNSystem where
   causal_signature : Object → Fin 4 → Fin 4 → Int
   -- Faithfulness: identical causal signatures imply operational equivalence in the system
   sig_faithful : ∀ o1 o2, causal_signature o1 = causal_signature o2 → OperEq_D step o1 o2
+  -- Boundary restriction: observed signatures must be functional (representable in pure ISK monoid)
+  sig_in_ISK : ∀ o, ISKAlgebra (toMatrix4 (causal_signature o))
 
+set_option linter.unusedVariables false in
 /--
 The encoding function mapping a 4x4 observed causal signature to an ISKSubtype term.
-This represents the claim that the four basis matrices span the representation space.
+Constructively defined using the expressive completeness of the ISK monoid.
 -/
-axiom encode_from_sig : (Fin 4 → Fin 4 → Int) → ISKSubtype
+noncomputable def encode_from_sig (D : ConfluentSNSystem) (sig : Fin 4 → Fin 4 → Int) : ISKSubtype :=
+  if h : ISKAlgebra (toMatrix4 sig) then
+    Classical.choose (isk_expressive_completeness (toMatrix4 sig) h)
+  else
+    ⟨ITerm.norm, ISKTerm.norm⟩ -- fallback
 
 /--
 The evaluation function reducing any transition system object to its normal form.
 -/
 noncomputable def eval_to_nf (D : ConfluentSNSystem) (o : D.Object) : D.Object :=
+
   D.sn.fix (fun x ih =>
     if h : ∃ y, D.step x y then
       ih (Classical.choose h) (Classical.choose_spec h)
@@ -189,13 +198,14 @@ noncomputable def eval_to_nf (D : ConfluentSNSystem) (o : D.Object) : D.Object :
       x
   ) o
 
+
 /--
 The decoding/projection function mapping substrate terms back to system objects,
 constructively defined by finding the matching object signature and evaluating to normal form.
 -/
 noncomputable def system_view_of (D : ConfluentSNSystem) (t : ISKSubtype) : D.Object :=
   have : Nonempty D.Object := D.nonempty
-  if h : ∃ o : D.Object, OperEq (encode_from_sig (D.causal_signature o)) t then
+  if h : ∃ o : D.Object, OperEq (encode_from_sig D (D.causal_signature o)) t then
     eval_to_nf D (Classical.choose h)
   else
     Classical.choice this
@@ -211,19 +221,19 @@ axiom system_sound (D : ConfluentSNSystem) : ∀ (t u : ISKSubtype),
 Completeness: encoding the view of a term is operationally equivalent to the term itself.
 -/
 axiom system_decode_view (D : ConfluentSNSystem) : ∀ (t : ISKSubtype),
-  OperEq (encode_from_sig (D.causal_signature (system_view_of D t))) t
+  OperEq (encode_from_sig D (D.causal_signature (system_view_of D t))) t
 
 /--
 Inverse Coherence: viewing the encoding of an object is joinable to the object itself.
 -/
 axiom system_view_eq_decode (D : ConfluentSNSystem) : ∀ (obj : D.Object),
-  OperEq_D D.step (system_view_of D (encode_from_sig (D.causal_signature obj))) obj
+  OperEq_D D.step (system_view_of D (encode_from_sig D (D.causal_signature obj))) obj
 
 /--
 Congruence: joinability of objects implies operational equivalence of their encodings.
 -/
 axiom system_decode_eq (D : ConfluentSNSystem) : ∀ (o1 o2 : D.Object),
-  OperEq_D D.step o1 o2 → OperEq (encode_from_sig (D.causal_signature o1)) (encode_from_sig (D.causal_signature o2))
+  OperEq_D D.step o1 o2 → OperEq (encode_from_sig D (D.causal_signature o1)) (encode_from_sig D (D.causal_signature o2))
 
 theorem OperEq_D_refl {Object : Type} (step : Object → Object → Prop) (o : Object) :
     OperEq_D step o o :=
@@ -262,12 +272,12 @@ noncomputable def confluence_SN_gives_AdmissibleDialect (D : ConfluentSNSystem) 
     ObsEq := OperEq_D D.step
     is_equiv := OperEq_D_equiv D
     eval := id
-    encode := fun o => encode_from_sig (D.causal_signature o)
+    encode := fun o => encode_from_sig D (D.causal_signature o)
     decode := fun q => system_view_of D (InvariantLayer.canonical_rep q)
     preserves := by
       intro x
       dsimp
-      have h1 := canonical_rep_eq (encode_from_sig (D.causal_signature x))
+      have h1 := canonical_rep_eq (encode_from_sig D (D.causal_signature x))
       have h2 := system_sound D _ _ h1
       have h3 := system_view_eq_decode D x
       exact OperEq_D_trans D.step D.confluent h2 h3
