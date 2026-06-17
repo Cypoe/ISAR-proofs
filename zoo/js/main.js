@@ -222,6 +222,7 @@ function renderGraph() {
     systemsByLevel[l] = [];
   }
   systems.forEach(s => {
+    if (s.id === 'ISAR') return; // Exclude ISAR from normal column layout
     const lvl = s.latticeLevel !== undefined ? s.latticeLevel : 0;
     systemsByLevel[lvl].push(s.id);
   });
@@ -238,17 +239,21 @@ function renderGraph() {
       const y = pos.y + Math.sin(offsetAngle) * r;
       positions.set(s.id, { x, y });
     } else if (state.view === 'probability') {
-      const lvl = s.latticeLevel !== undefined ? s.latticeLevel : 0;
-      const x = 100 + (lvl / 4) * (w - 200);
-      const idx = systemsByLevel[lvl].indexOf(s.id);
-      const count = systemsByLevel[lvl].length;
-      let y;
-      if (count === 1) {
-        y = h / 2;
+      if (s.id === 'ISAR') {
+        positions.set(s.id, { x: 75, y: h / 2 });
       } else {
-        y = 60 + (idx / (count - 1)) * (h - 120);
+        const lvl = s.latticeLevel !== undefined ? s.latticeLevel : 0;
+        const x = 220 + (lvl / 4) * (w - 320);
+        const idx = systemsByLevel[lvl].indexOf(s.id);
+        const count = systemsByLevel[lvl].length;
+        let y;
+        if (count === 1) {
+          y = h / 2;
+        } else {
+          y = 60 + (idx / (count - 1)) * (h - 120);
+        }
+        positions.set(s.id, { x, y });
       }
-      positions.set(s.id, { x, y });
     } else {
       const x = 80 + ((s.primitives - 1) / Math.max(1, maxPrim - 1)) * (w - 160);
       const carrierScore = ['I', 'S', 'A', 'R'].reduce((n, k) => n + (s.carriers[k] ? 1 : 0), 0);
@@ -279,6 +284,14 @@ function renderGraph() {
     edge.style.top = p1.y + 'px';
     edge.style.width = len + 'px';
     edge.style.transform = `rotate(${ang}deg)`;
+    
+    // Highlight edges from ISAR substrate explicitly in probability view
+    if (state.view === 'probability' && (a === 'ISAR' || b === 'ISAR')) {
+      edge.style.background = 'var(--color-primary)';
+      edge.style.height = '2.5px';
+      edge.style.boxShadow = '0 0 10px var(--color-primary)';
+      edge.style.zIndex = '1';
+    }
     viewport.appendChild(edge);
   });
 
@@ -313,26 +326,60 @@ function renderGraph() {
 
   // Draw probability axis overlays
   if (state.view === 'probability') {
-    const levelNames = [
-      "Poset\n(Order)",
-      "Boolean Lattice\n(Classical Logic)",
-      "Probability Calculus\n(Weighted Logic)",
-      "Orthomodular Poset\n(Quantum Logic)",
-      "Effect Algebra\n(Unsharp Logic)"
-    ];
+    // 1. Draw lanes divider lines
     for (let l = 0; l <= 4; l++) {
-      const x = 100 + (l / 4) * (w - 200);
-      const bubble = document.createElement('div');
-      bubble.className = 'quotient-bubble visible';
-      bubble.style.left = x + 'px';
-      bubble.style.top = (h / 2) + 'px';
-      bubble.style.width = '130px';
-      bubble.style.height = '130px';
-      bubble.style.borderStyle = 'dashed';
-      bubble.style.borderColor = 'rgba(230, 126, 34, 0.4)';
-      bubble.innerHTML = `<span style="text-align:center;font-size:9px;color:#e67e22;pointer-events:none;padding:5px;white-space:pre-line;text-transform:none;letter-spacing:normal">${levelNames[l]}</span>`;
-      viewport.appendChild(bubble);
+      const x = 220 + (l / 4) * (w - 320);
+      const line = document.createElement('div');
+      line.style.position = 'absolute';
+      line.style.left = x + 'px';
+      line.style.top = '0';
+      line.style.width = '1px';
+      line.style.height = h + 'px';
+      line.style.borderLeft = '1px dashed color-mix(in oklab, var(--color-text-faint) 25%, transparent)';
+      line.style.pointerEvents = 'none';
+      viewport.appendChild(line);
+
+      // 2. Draw lane headers
+      const header = document.createElement('div');
+      header.style.position = 'absolute';
+      header.style.left = x + 'px';
+      header.style.top = '20px';
+      header.style.transform = 'translateX(-50%)';
+      header.style.textAlign = 'center';
+      header.style.fontFamily = 'var(--font-mono)';
+      header.style.pointerEvents = 'none';
+      header.style.zIndex = '1';
+      
+      const levelCodes = ["L00", "L01", "L02", "L03", "L04"];
+      const levelLabels = ["ORDER / POSET", "DISTRIBUTIVE LOGIC", "WEIGHTED MEASURE", "ORTHOMODULAR POS", "CONVEX EFFECT"];
+      header.innerHTML = `
+        <div style="font-size:18px;font-weight:700;color:var(--color-primary);letter-spacing:0.05em">${levelCodes[l]}</div>
+        <div style="font-size:8px;letter-spacing:0.12em;color:var(--color-text-muted);white-space:nowrap">${levelLabels[l]}</div>
+      `;
+      viewport.appendChild(header);
     }
+
+    // 3. Highlight ISAR Core Zone explicitly
+    const isarBox = document.createElement('div');
+    isarBox.className = 'isar-core-frame';
+    isarBox.style.position = 'absolute';
+    isarBox.style.left = '75px';
+    isarBox.style.top = (h / 2) + 'px';
+    isarBox.style.width = '104px';
+    isarBox.style.height = '104px';
+    isarBox.style.transform = 'translate(-50%, -50%)';
+    isarBox.style.border = '2px dashed var(--color-primary)';
+    isarBox.style.boxShadow = '0 0 18px color-mix(in oklab, var(--color-primary) 30%, transparent)';
+    isarBox.style.pointerEvents = 'none';
+    isarBox.style.display = 'grid';
+    isarBox.style.placeItems = 'center';
+    isarBox.style.zIndex = '0';
+    
+    isarBox.innerHTML = `
+      <span style="position:absolute;top:6px;left:6px;font-family:var(--font-mono);font-size:7px;color:var(--color-primary);letter-spacing:0.05em">[SUBSTRATE]</span>
+      <span style="position:absolute;bottom:6px;right:6px;font-family:var(--font-mono);font-size:7px;color:var(--color-primary);letter-spacing:0.05em">ISAR CORE</span>
+    `;
+    viewport.appendChild(isarBox);
   }
 
   // Draw system nodes
@@ -340,9 +387,12 @@ function renderGraph() {
     const pos = positions.get(s.id);
     const node = document.createElement('button');
     node.className = 'node';
+    if (s.id === 'ISAR') {
+      node.classList.add('node-isar-core');
+    }
     node.style.left = pos.x + 'px';
     node.style.top = pos.y + 'px';
-    node.innerHTML = `<div class="node-circle" style="background:${getColor(s)}"><span>${s.symbol}</span></div><small>${s.name}</small>`;
+    node.innerHTML = `<div class="node-circle" style="border-color:${getColor(s)}; color:${getColor(s)}"><span>${s.symbol}</span></div><small>${s.name}</small>`;
     node.setAttribute('aria-label', s.name);
     node.addEventListener('click', () => {
       state.customCombinator = '';
@@ -1211,12 +1261,33 @@ function renderOccamLens(s) {
 
 function highlightSelection() {
   if (!graph) return;
+  const systems = filteredSystems();
+  
+  // Highlight graph nodes
   [...graph.querySelectorAll('.node')].forEach((n, i) => {
-    const systems = filteredSystems();
     const s = systems[i];
     if (!s) return;
-    n.style.opacity = !state.selected || s.id === state.selected ? '1' : '.35';
+    if (s.id === state.selected) {
+      n.classList.add('selected');
+      n.style.opacity = '1';
+    } else {
+      n.classList.remove('selected');
+      n.style.opacity = state.selected ? '.35' : '1';
+    }
   });
+
+  // Highlight list cards
+  if (cards) {
+    [...cards.children].forEach((card, i) => {
+      const s = systems[i];
+      if (!s) return;
+      if (s.id === state.selected) {
+        card.classList.add('selected');
+      } else {
+        card.classList.remove('selected');
+      }
+    });
+  }
 }
 
 function renderStats() {
