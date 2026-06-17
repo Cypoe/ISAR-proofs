@@ -1,5 +1,5 @@
-import InvariantLayer
-import KernelCategory
+import ISAR.InvariantLayer
+import ISAR.KernelCategory
 
 namespace ISAR
 

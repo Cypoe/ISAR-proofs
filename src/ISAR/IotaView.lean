@@ -1,5 +1,5 @@
-import DialectKernel
-import HFSetEncoding
+import ISAR.DialectKernel
+import ISAR.HFSetEncoding
 
 namespace ISAR
 
@@ -27,34 +27,34 @@ def iota_encode : IotaTerm → ISKSubtype
   | IotaTerm.app t1 t2 => app_raw (iota_encode t1) (iota_encode t2)
 
 /-- Constructive decoder over the ITerm structure. -/
-def decode_raw_val : ITerm → IotaTerm
+def iota_decode_raw_val : ITerm → IotaTerm
   | ITerm.app (ITerm.app ITerm.sₛ (ITerm.app (ITerm.app ITerm.sₛ ITerm.norm) (ITerm.app ITerm.konst ITerm.sₛ))) (ITerm.app ITerm.konst ITerm.konst) => IotaTerm.iota
-  | ITerm.app f x => IotaTerm.app (decode_raw_val f) (decode_raw_val x)
+  | ITerm.app f x => IotaTerm.app (iota_decode_raw_val f) (iota_decode_raw_val x)
   | _ => IotaTerm.iota
 
 /-- Decode an `ISKSubtype` back to `IotaTerm`. -/
-def decode_raw (t : ISKSubtype) : IotaTerm :=
-  decode_raw_val t.val
+def iota_decode_raw (t : ISKSubtype) : IotaTerm :=
+  iota_decode_raw_val t.val
 
-/-- Lemma showing that decode_raw_val distributes over encoded applications. -/
-theorem decode_raw_val_app (t1 t2 : IotaTerm) :
-    decode_raw_val (ITerm.app (iota_encode t1).val (iota_encode t2).val) =
-    IotaTerm.app (decode_raw_val (iota_encode t1).val) (decode_raw_val (iota_encode t2).val) := by
+/-- Lemma showing that iota_decode_raw_val distributes over encoded applications. -/
+theorem iota_decode_raw_val_app (t1 t2 : IotaTerm) :
+    iota_decode_raw_val (ITerm.app (iota_encode t1).val (iota_encode t2).val) =
+    IotaTerm.app (iota_decode_raw_val (iota_encode t1).val) (iota_decode_raw_val (iota_encode t2).val) := by
   sorry
 
-/-- Proof that `decode_raw` after `iota_encode` is the identity on `IotaTerm`. -/
-theorem decode_raw_iota_encode (t : IotaTerm) : decode_raw (iota_encode t) = t := by
+/-- Proof that `iota_decode_raw` after `iota_encode` is the identity on `IotaTerm`. -/
+theorem iota_decode_raw_iota_encode (t : IotaTerm) : iota_decode_raw (iota_encode t) = t := by
   induction t with
   | iota => rfl
   | app t1 t2 ih1 ih2 =>
-      unfold decode_raw at ih1 ih2
-      unfold decode_raw
+      unfold iota_decode_raw at ih1 ih2
+      unfold iota_decode_raw
       dsimp [iota_encode, app_raw]
-      rw [decode_raw_val_app, ih1, ih2]
+      rw [iota_decode_raw_val_app, ih1, ih2]
 
 /-- Decode from the Invariant Layer quotient class into an `IotaTerm`. -/
 noncomputable def iota_decode (q : InvariantLayer) : IotaTerm :=
-  decode_raw (InvariantLayer.canonical_rep q)
+  iota_decode_raw (InvariantLayer.canonical_rep q)
 
 /-- The observational equivalence relation on `IotaTerm`, reducing to operational equivalence of encodings. -/
 def iota_obs_eq (t1 t2 : IotaTerm) : Prop :=
@@ -79,7 +79,7 @@ noncomputable def Iota_Dialect : Dialect where
     intro x
     unfold iota_obs_eq iota_decode
     dsimp
-    have h_eq : iota_encode (decode_raw (InvariantLayer.canonical_rep (Quotient.mk operEqSetoid (iota_encode x)))) =
+    have h_eq : iota_encode (iota_decode_raw (InvariantLayer.canonical_rep (Quotient.mk operEqSetoid (iota_encode x)))) =
                 InvariantLayer.canonical_rep (Quotient.mk operEqSetoid (iota_encode x)) := by
       sorry
     rw [h_eq]

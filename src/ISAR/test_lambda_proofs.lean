@@ -1,4 +1,4 @@
-import ISAR
+import ISAR.Kernel
 
 open ISAR
 

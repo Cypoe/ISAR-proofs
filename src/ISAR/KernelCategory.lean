@@ -1,4 +1,4 @@
-import InvariantLayer
+import ISAR.InvariantLayer
 
 namespace ISAR
 

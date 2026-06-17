@@ -1,11 +1,11 @@
-import DialectKernel
-import ViewIndependence
-import TRSView
-import BytecodeView
-import QuantityKernel
-import ZFCInterpretation
-import Futamura
-import BasisCompleteness
+import ISAR.DialectKernel
+import ISAR.ViewIndependence
+import ISAR.TRSView
+import ISAR.BytecodeView
+import ISAR.QuantityKernel
+import ISAR.ZFCInterpretation
+import ISAR.Futamura
+import ISAR.BasisCompleteness
 
 namespace ISAR
 
@@ -119,20 +119,20 @@ noncomputable def Bytecode_AdmissibleDialect : AdmissibleDialect where
   is_equiv := bytecode_obs_equiv
   sound t u h := by
     unfold bytecode_obs_eq
-    rw [compile_decompile, compile_decompile]
+    rw [compile_bytecode_decompile, compile_bytecode_decompile]
     rw [trs_encode_decode_raw t, trs_encode_decode_raw u]
     exact h
   decode_view t := by
     dsimp [Bytecode_Dialect]
-    rw [compile_decompile]
+    rw [compile_bytecode_decompile]
     rw [trs_encode_decode_raw t]
     exact OperEq.refl t
   view_eq_decode obj := by
     unfold bytecode_obs_eq
     dsimp [Bytecode_Dialect]
-    rw [compile_decompile]
-    rw [decode_raw_trs_encode (compile obj)]
-    exact OperEq.refl (trs_encode (compile obj))
+    rw [compile_bytecode_decompile]
+    rw [decode_raw_trs_encode (compile_bytecode obj)]
+    exact OperEq.refl (trs_encode (compile_bytecode obj))
   decode_eq _ _ h := h
 
 

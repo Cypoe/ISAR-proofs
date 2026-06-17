@@ -1,4 +1,4 @@
-import TRSView
+import ISAR.TRSView
 
 namespace ISAR
 
@@ -30,7 +30,7 @@ theorem run_app_two (insts : List Instruction) (x y : TTerm) (stack : List TTerm
     run (Instruction.app :: insts) (x :: y :: stack) = run insts (TTerm.app y x :: stack) := rfl
 
 /-- Compile a bytecode program by running it on an empty stack and taking the top term. -/
-def compile (p : List Instruction) : TTerm :=
+def compile_bytecode (p : List Instruction) : TTerm :=
   match run p [] with
   | x :: _ => x
   | [] => TTerm.I
@@ -90,17 +90,17 @@ theorem run_decompile_eq (t : TTerm) (stack : List TTerm) :
       rfl
 
 /-- Theorem: Compiling a decompiled TTerm returns the original term. -/
-theorem compile_decompile (t : TTerm) : compile (decompile t) = t := by
-  unfold compile
+theorem compile_bytecode_decompile (t : TTerm) : compile_bytecode (decompile t) = t := by
+  unfold compile_bytecode
   rw [run_decompile_eq]
 
 /-- Observational equivalence for bytecode programs (evaluating to equivalent terms). -/
 def bytecode_obs_eq (p1 p2 : List Instruction) : Prop :=
-  OperEq (trs_encode (compile p1)) (trs_encode (compile p2))
+  OperEq (trs_encode (compile_bytecode p1)) (trs_encode (compile_bytecode p2))
 
 /-- Observational equivalence is a setoid. -/
 def bytecode_obs_equiv : Equivalence bytecode_obs_eq where
-  refl p := OperEq.refl (trs_encode (compile p))
+  refl p := OperEq.refl (trs_encode (compile_bytecode p))
   symm h := OperEq.symm h
   trans h1 h2 := OperEq.trans h1 h2
 
@@ -115,19 +115,19 @@ noncomputable def Bytecode_Dialect : Dialect where
   ObsEq := bytecode_obs_eq
   is_equiv := bytecode_obs_equiv
   eval := id
-  encode := fun p => trs_encode (compile p)
+  encode := fun p => trs_encode (compile_bytecode p)
   decode := decode_bytecode
   preserves := by
     intro x
     unfold bytecode_obs_eq decode_bytecode
     dsimp
-    have h_comp : ∀ t, compile (decompile t) = t := compile_decompile
+    have h_comp : ∀ t, compile_bytecode (decompile t) = t := compile_bytecode_decompile
     rw [h_comp]
     unfold trs_decode
-    have h_eq : trs_encode (decode_raw (InvariantLayer.canonical_rep (Quotient.mk operEqSetoid (trs_encode (compile x))))) =
-                InvariantLayer.canonical_rep (Quotient.mk operEqSetoid (trs_encode (compile x))) := by
+    have h_eq : trs_encode (decode_raw (InvariantLayer.canonical_rep (Quotient.mk operEqSetoid (trs_encode (compile_bytecode x))))) =
+                InvariantLayer.canonical_rep (Quotient.mk operEqSetoid (trs_encode (compile_bytecode x))) := by
       exact trs_encode_decode_raw _
     rw [h_eq]
-    exact canonical_rep_eq (trs_encode (compile x))
+    exact canonical_rep_eq (trs_encode (compile_bytecode x))
 
 end ISAR

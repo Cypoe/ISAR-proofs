@@ -1,5 +1,5 @@
-import InvariantLayer
-import LambdaFragment
+import ISAR.InvariantLayer
+import ISAR.LambdaFragment
 
 namespace ISAR
 

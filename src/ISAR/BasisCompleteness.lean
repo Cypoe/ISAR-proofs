@@ -1,5 +1,5 @@
-import ISARMatrices
-import InvariantLayer
+import ISAR.ISARMatrices
+import ISAR.InvariantLayer
 
 namespace ISAR
 

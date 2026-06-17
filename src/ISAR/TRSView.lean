@@ -1,5 +1,5 @@
-import DialectKernel
-import HFSetEncoding
+import ISAR.DialectKernel
+import ISAR.HFSetEncoding
 
 namespace ISAR
 

@@ -1,4 +1,4 @@
-import DialectKernel
+import ISAR.DialectKernel
 
 namespace ISAR
 

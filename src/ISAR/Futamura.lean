@@ -1,9 +1,9 @@
-import InvariantLayer
+import ISAR.InvariantLayer
 
 namespace ISAR
 
 /-- Substitution function replacing variables with terms. -/
-def subst (t : ITerm) (env : Nat → ITerm) : ITerm :=
+def subst_env (t : ITerm) (env : Nat → ITerm) : ITerm :=
   match t with
   | ITerm.var n => env n
   | ITerm.norm => ITerm.norm
@@ -12,7 +12,7 @@ def subst (t : ITerm) (env : Nat → ITerm) : ITerm :=
   | ITerm.swap => ITerm.swap
   | ITerm.comp => ITerm.comp
   | ITerm.sₛ => ITerm.sₛ
-  | ITerm.app f x => ITerm.app (subst f env) (subst x env)
+  | ITerm.app f x => ITerm.app (subst_env f env) (subst_env x env)
 
 /-- Specializer (partial evaluator) replacing static variables. -/
 def specialize (t : ITerm) (static_env : Nat → Option ITerm) : ITerm :=
@@ -31,38 +31,38 @@ def specialize (t : ITerm) (static_env : Nat → Option ITerm) : ITerm :=
 
 /-- Coherence condition relating full environment and partial environments. -/
 def Coherent (env : Nat → ITerm) (static_env : Nat → Option ITerm) (dynamic_env : Nat → ITerm) : Prop :=
-  ∀ n, subst (match static_env n with | some val => val | none => ITerm.var n) dynamic_env = env n
+  ∀ n, subst_env (match static_env n with | some val => val | none => ITerm.var n) dynamic_env = env n
 
 /-- Theorem: Substitution preserves single-step ISAR reduction. -/
-theorem subst_preserves_step {t u : ITerm} (env : Nat → ITerm) (h : IStep t u) :
-    IStep (subst t env) (subst u env) := by
+theorem subst_env_preserves_step {t u : ITerm} (env : Nat → ITerm) (h : IStep t u) :
+    IStep (subst_env t env) (subst_env u env) := by
   induction h generalizing env with
   | normβ x =>
-      dsimp [subst]
-      exact IStep.normβ (subst x env)
+      dsimp [subst_env]
+      exact IStep.normβ (subst_env x env)
   | konstβ x y =>
-      dsimp [subst]
-      exact IStep.konstβ (subst x env) (subst y env)
+      dsimp [subst_env]
+      exact IStep.konstβ (subst_env x env) (subst_env y env)
   | compβ f g x =>
-      dsimp [subst]
-      exact IStep.compβ (subst f env) (subst g env) (subst x env)
+      dsimp [subst_env]
+      exact IStep.compβ (subst_env f env) (subst_env g env) (subst_env x env)
   | sβ x y z =>
-      dsimp [subst]
-      exact IStep.sβ (subst x env) (subst y env) (subst z env)
+      dsimp [subst_env]
+      exact IStep.sβ (subst_env x env) (subst_env y env) (subst_env z env)
   | appL hf ih =>
-      dsimp [subst]
+      dsimp [subst_env]
       exact IStep.appL (ih env)
   | appR hx ih =>
-      dsimp [subst]
+      dsimp [subst_env]
       exact IStep.appR (ih env)
 
 /-- Theorem: Substitution preserves multi-step ISAR reduction. -/
-theorem subst_preserves_red {t u : ITerm} (env : Nat → ITerm) (h : IRed t u) :
-    IRed (subst t env) (subst u env) := by
+theorem subst_env_preserves_red {t u : ITerm} (env : Nat → ITerm) (h : IRed t u) :
+    IRed (subst_env t env) (subst_env u env) := by
   induction h with
   | refl => exact Relation.ReflTransGen.refl
   | tail _ hstep ih =>
-      exact Relation.ReflTransGen.tail ih (subst_preserves_step env hstep)
+      exact Relation.ReflTransGen.tail ih (subst_env_preserves_step env hstep)
 
 /--
 Theorem: First Futamura Projection (Specialization Soundness).
@@ -71,19 +71,19 @@ to evaluating the original program with the full environment.
 -/
 theorem futamura_first (t : ITerm) (env : Nat → ITerm) (static_env : Nat → Option ITerm) (dynamic_env : Nat → ITerm)
     (h_coh : Coherent env static_env dynamic_env) :
-    subst (specialize t static_env) dynamic_env = subst t env := by
+    subst_env (specialize t static_env) dynamic_env = subst_env t env := by
   induction t with
   | var n =>
     dsimp [specialize]
     split
     next val h_val =>
       have h_coh_n := h_coh n
-      dsimp [subst] at *
+      dsimp [subst_env] at *
       rw [h_val] at h_coh_n
       exact h_coh_n
     next h_val =>
       have h_coh_n := h_coh n
-      dsimp [subst] at *
+      dsimp [subst_env] at *
       rw [h_val] at h_coh_n
       exact h_coh_n
   | norm => rfl
@@ -93,13 +93,13 @@ theorem futamura_first (t : ITerm) (env : Nat → ITerm) (static_env : Nat → O
   | comp => rfl
   | sₛ => rfl
   | app f x ihf ihx =>
-      dsimp [specialize, subst]
+      dsimp [specialize, subst_env]
       rw [ihf, ihx]
 
 /-- Correctness predicate for a specializer term. -/
 def SpecializerCorrect (spec_term : ITerm) (make_env : ITerm → (Nat → Option ITerm) → (Nat → ITerm)) : Prop :=
   ∀ (p : ITerm) (s_env : Nat → Option ITerm),
-    subst spec_term (make_env p s_env) = specialize p s_env
+    subst_env spec_term (make_env p s_env) = specialize p s_env
 
 /--
 Theorem: Second Futamura Projection (Compiler Generation Correctness).
@@ -115,7 +115,7 @@ theorem futamura_second
     (static_env_for_spec : Nat → Option ITerm)
     (dynamic_env_for_spec : Nat → ITerm)
     (h_coh : Coherent (make_env interp static_env_for_interp) static_env_for_spec dynamic_env_for_spec) :
-    subst (specialize spec_term static_env_for_spec) dynamic_env_for_spec =
+    subst_env (specialize spec_term static_env_for_spec) dynamic_env_for_spec =
       specialize interp static_env_for_interp := by
   have h_first := futamura_first spec_term (make_env interp static_env_for_interp) static_env_for_spec dynamic_env_for_spec h_coh
   have h_spec := h_corr interp static_env_for_interp
@@ -134,7 +134,7 @@ theorem futamura_third
     (static_env_for_cogen : Nat → Option ITerm)
     (dynamic_env_for_cogen : Nat → ITerm)
     (h_coh : Coherent (make_env spec_term static_env_for_spec_interp) static_env_for_cogen dynamic_env_for_cogen) :
-    subst (specialize spec_term static_env_for_cogen) dynamic_env_for_cogen =
+    subst_env (specialize spec_term static_env_for_cogen) dynamic_env_for_cogen =
       specialize spec_term static_env_for_spec_interp := by
   have h_first := futamura_first spec_term (make_env spec_term static_env_for_spec_interp) static_env_for_cogen dynamic_env_for_cogen h_coh
   have h_spec := h_corr spec_term static_env_for_spec_interp

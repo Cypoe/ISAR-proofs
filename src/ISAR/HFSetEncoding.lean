@@ -1,5 +1,5 @@
-import HFSet
-import InvariantLayer
+import ISAR.HFSet
+import ISAR.InvariantLayer
 
 namespace ISAR
 

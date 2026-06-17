@@ -1,5 +1,5 @@
-import KernelCategory
-import HFSetEncoding
+import ISAR.KernelCategory
+import ISAR.HFSetEncoding
 
 namespace ISAR
 

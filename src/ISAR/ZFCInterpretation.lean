@@ -1,5 +1,5 @@
-import HFSetSemantics
-import KernelCategory
+import ISAR.HFSetSemantics
+import ISAR.KernelCategory
 
 namespace ISAR
 
