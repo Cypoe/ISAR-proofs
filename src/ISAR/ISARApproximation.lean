@@ -267,6 +267,20 @@ noncomputable def continuousRealization (d k : Nat) (σ : Activation) (q : Kerne
   ) q
 
 /--
+**Injectivity of the Continuous Realization.**
+
+By construction, two equivalence classes in the quotient address space `KernelAddress`
+are equal if and only if they realize the exact same continuous function.
+This guarantees that the representation is unique (injectivity holds constructively).
+-/
+theorem continuousRealization_injective (d k : Nat) (σ : Activation) (q₁ q₂ : KernelAddress d k σ) :
+    continuousRealization d k σ q₁ = continuousRealization d k σ q₂ → q₁ = q₂ := by
+  intro h
+  refine Quotient.inductionOn₂ q₁ q₂ (fun θ₁ θ₂ h_eq => ?_) h
+  have h_sound : AddressEq d k σ θ₁ θ₂ := h_eq
+  exact Quotient.sound h_sound
+
+/--
 **ISAR Universal Approximation Theorem.**
 
 For any continuous function f : ℝᵈ → ℝᵏ, a non-polynomial activation σ,
