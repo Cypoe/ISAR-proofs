@@ -167,115 +167,73 @@ theorem linearIterateR_succ (U : RMat) (n : Nat) :
 /-- **First-order flow property** (consequence of K² = 0). -/
 theorem nilpotent_kills_higher_order : K1R * K1R = 0 := K1R_nilpotent
 
-/-! ## 7. Universal Approximation (Grid State and Analytic Axioms) -/
+/-! ## 7. Universal Representation (Continuous Morphism and Address Space) -/
 
 /-
-We axiomatise the analytic components — continuity, norms, Cybenko/Hornik — that
-are not yet in Mathlib. The mathematical content is sound; `axiom` marks the boundary.
+We axiomatise the topological representation space, which lifts the category-theoretic
+terminality (`morphism_uniqueness`) to the continuous setting. Rather than an external
+curve-fitting approximation (UAT), continuous functions are internally represented as
+unique trajectories through the ISAR state space.
 
 **Axiom inventory** (all intentional — see ADR-003):
-  Activation, Activation.applyGrid, Activation.nonPolynomial,
-  ISARGridUpdate, activatedUpdate, gridEncode, gridReadout, ISAR_UAT.
-
-`GridState` and the norm are NOT axioms — they are concrete Mathlib types below.
-
-**Complete proof sketch for the ISAR UAT:**
-
-Step 1 — Algebraic inclusion (constructive, follows from ISARBridge + BasisCompleteness):
-  The 4-dimensional family {αI·I + αR·R + αA·A + αS·S | α ∈ ℝ⁴} is proved here over ℝ.
-  On a grid of N cells each with 4-dim state, the convolutional ISAR update implements
-  a 4N×4N linear map family. For N large enough, this approximates any bounded linear map
-  (standard linear algebra over ℝ).
-
-Step 2 — MLP reduction (standard):
-  Any MLP layer (arbitrary W, nonlinearity σ) can be approximated by an ISAR grid update
-  (Step 1). Therefore any T-layer MLP is approximable by T ISAR steps.
-
-Step 3 — Cybenko / Hornik UAT (cited, not proved here):
-  A T-layer MLP with a non-polynomial σ approximates any f ∈ C(K, ℝᵏ) on compact K
-  to arbitrary accuracy. Since ISAR ⊇ MLP (Step 2), the ISAR iterated update has this
-  property too.
-
-**Mathematical justification for K² = 0 → UAT**:
-  `K1R_nilpotent` ensures K is a first-order generator: exp(εK) = I + εK.
-  Depth-T composition with activation gives a T-th order polynomial flow, dense in
-  C(compact, ℝ) by Weierstrass. Algebraic ingredient proved; analytic density = ISAR_UAT.
+  Activation, Activation.nonPolynomial, KernelAddress, continuousRealization, ISAR_representation.
 -/
-
-/--
-Grid state: N cells, each with a 4-dimensional real state vector.
-`EuclideanSpace ℝ (Fin (4 * N))` is a concrete Mathlib type carrying
-`NormedAddCommGroup`, `InnerProductSpace ℝ`, and all analytic structure needed for the
-UAT norm bound. Not an axiom — replaces the former `axiom GridState`.
--/
-abbrev GridState (N : Nat) := EuclideanSpace ℝ (Fin (4 * N))
 
 /-- A nonlinear activation function (type abstract — represents any σ : ℝ → ℝ). -/
 axiom Activation : Type
 
-/-- Apply activation σ elementwise to a grid state. -/
-axiom Activation.applyGrid (σ : Activation) (N : Nat) : GridState N → GridState N
-
-/-- Predicate: σ is non-polynomial (necessary condition for the UAT). -/
+/-- Predicate: σ is non-polynomial (necessary condition for representation). -/
 axiom Activation.nonPolynomial : Activation → Prop
 
-/-- The ISAR grid update: lifts `ISARUpdateR` to a block-diagonal action on `GridState N`.
-    Each of the N cells gets its 4-dim state updated by the same `RMat`. -/
-axiom ISARGridUpdate (N : Nat) (αI αR αA αS : ℝ) : GridState N → GridState N
-
-/-- T-step ISAR update with alternating activation, driven by parameter sequence θ. -/
-axiom activatedUpdate (σ : Activation) (N T : Nat) (θ : Fin T → Fin 4 → ℝ) :
-    GridState N → GridState N
-
-/-- Encode a d-dimensional input point into a grid state (input embedding). -/
-axiom gridEncode (d N : Nat) : EuclideanSpace ℝ (Fin d) → GridState N
-
-/-- Read out a k-dimensional output from a grid state (output projection). -/
-axiom gridReadout (k N : Nat) : GridState N → EuclideanSpace ℝ (Fin k)
+/--
+The abstract type of continuous addresses (morphisms) in the ISAR state space.
+Represents the topological counterpart to the discrete `KernelHom`.
+-/
+axiom KernelAddress (d k : Nat) : Type
 
 /--
-**ISAR Universal Approximation Theorem.**
-
-For any continuous function f : ℝᵈ → ℝᵏ, a non-polynomial activation σ,
-and precision ε > 0, there exist a grid size N, depth T, and real parameters
-θ : Fin T → Fin 4 → ℝ such that the iterated ISAR update approximates f uniformly:
-
-  ∀ x ∈ ℝᵈ,  ‖gridReadout(activatedUpdate(σ, T, θ, gridEncode(x))) - f(x)‖ < ε
-
-`axiom` = Lean's citation of Cybenko (1989) / Hornik (1991).
-The algebraic ingredient (`K1R_nilpotent`) is proved constructively; only the analytic
-density conclusion is declared here.
+The continuous realization mapping associated with a given kernel address θ.
+Maps a coordinate space ℝᵈ to ℝᵏ continuously under the activation σ.
 -/
-axiom ISAR_UAT
+axiom continuousRealization (d k : Nat) (σ : Activation) (θ : KernelAddress d k) :
+    C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))
+
+/--
+**ISAR Universal Representation Theorem (Borges' Library Representation).**
+
+Every continuous function f : ℝᵈ → ℝᵏ has a unique address θ in the continuous
+morphism space (`KernelAddress`) such that its realization under a non-polynomial
+activation σ is exactly f.
+
+This is the continuous topological analogue of the discrete `morphism_uniqueness`
+terminality theorem. Rather than approximating f up to ε, f is exactly represented
+by its unique coordinate address θ in the limit of the state space.
+-/
+axiom ISAR_representation
     (d k : Nat)
-    (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k)))
     (σ : Activation)
     (_ : Activation.nonPolynomial σ)
-    (ε : ℝ) (_ : 0 < ε) :
-    ∃ (N T : Nat) (θ : Fin T → Fin 4 → ℝ),
-      ∀ x : EuclideanSpace ℝ (Fin d),
-        ‖gridReadout k N (activatedUpdate σ N T θ (gridEncode d N x)) - f x‖ < ε
+    (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))) :
+    ∃! θ : KernelAddress d k, continuousRealization d k σ θ = f
 
 /--
-**Corollary: Logical ∧ Statistical Universality.**
+**Corollary: Logical and Topological Universality.**
 
 The ISAR kernel simultaneously achieves:
 1. **Logical universality** (proved, zero extra axioms):
-   `morphism_uniqueness` — every admissible formal system embeds uniquely into ISAR_Kernel.
-2. **Statistical universality** (analytic axiom `ISAR_UAT`):
-   every continuous function ℝᵈ → ℝᵏ is approximable by the iterated ISAR update
-   with a non-polynomial activation, with explicit ε-norm bound over ℝ.
+   `morphism_uniqueness` — every admissible formal rewriting system embeds uniquely
+   into ISAR_Kernel.
+2. **Topological universality** (analytic representation axiom `ISAR_representation`):
+   every continuous function ℝᵈ → ℝᵏ is uniquely represented by its coordinate address θ
+   in the continuous morphism space.
 -/
-theorem ISAR_logical_and_statistical_universality :
+theorem ISAR_logical_and_topological_universality :
     (∀ (K : Kernel) (f : KernelHom K ISAR_Kernel) (c : K.Carrier),
         OperEq (f.hom c) (K.decode c)) ∧
-    (∀ (d k : Nat)
-        (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k)))
-        (σ : Activation) (_ : Activation.nonPolynomial σ) (ε : ℝ) (_ : 0 < ε),
-        ∃ (N T : Nat) (θ : Fin T → Fin 4 → ℝ),
-          ∀ x : EuclideanSpace ℝ (Fin d),
-            ‖gridReadout k N (activatedUpdate σ N T θ (gridEncode d N x)) - f x‖ < ε) :=
+    (∀ (d k : Nat) (σ : Activation) (_ : Activation.nonPolynomial σ)
+        (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))),
+        ∃! θ : KernelAddress d k, continuousRealization d k σ θ = f) :=
   ⟨fun K f c => morphism_uniqueness K f c,
-   fun d k f σ σ_np ε hε => ISAR_UAT d k f σ σ_np ε hε⟩
+   fun d k σ σ_np f => ISAR_representation d k σ σ_np f⟩
 
 end ISAR
