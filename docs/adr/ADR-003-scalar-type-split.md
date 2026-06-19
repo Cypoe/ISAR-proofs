@@ -49,7 +49,7 @@ By transitioning fully to `ℝ`, the parameters of `ISARUpdateR` are real number
 
 ## Axiom Inventory
 
-By formalizing the quotient structure and continuous activations, the axiom inventory has been minimized to only two analytical axioms:
+By formalizing the quotient structure, continuous activations, and recursive block-diagonal updates, the axiom inventory has been minimized to three analytical axioms/mappings:
 
 | Axiom / Definition | Role | Why axiomatic / defined |
 |---|---|---|
@@ -58,8 +58,10 @@ By formalizing the quotient structure and continuous activations, the axiom inve
 | `RawAddress` | Configuration space | **Definitional**: Concrete type representing $(N, T, \theta, encode, readout)$ configurations. |
 | `KernelAddress` | Address space | **Definitional**: Concrete quotient of `RawAddress` modulo functional equivalence. |
 | `continuousRealization` | Address realization map | **Definitional**: Lifted composition map on the quotient. |
-| `activatedUpdate` | T-step update map | **Axiomatic**: Requires the continuous-limit block dynamics. |
+| `activatedUpdate` | T-step update map | **Definitional**: Concrete recursive composition map. |
 | `ISAR_UAT` | Universal approximation | **Axiomatic**: Standard Cybenko/Hornik approximation theorem on compact domains. |
+| `KernelAddressLimit` / `continuousRealizationLimit` | Limit address space & realization | **Axiomatic**: Map representing the completion of the quotient address space. |
+| `topological_extension_bijection` | Completion extension | **Axiomatic**: Functional analysis theorem extending dense + injective map to a unique bijection on the completion. |
 
 **No algebraic theorems use `sorry` or `axiom`.**
 

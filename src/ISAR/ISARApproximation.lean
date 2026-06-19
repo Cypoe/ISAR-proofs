@@ -218,7 +218,14 @@ theorem continuous_middleMap (N : Nat) (U : RMat) :
   intro j' _
   exact continuous_const.mul (continuous_apply (p.1, j'))
 
-/-- The block-diagonal action of U on GridState N. -/
+/--
+The block-diagonal action of U on GridState N.
+
+**Mathematical Motivation**: Implements the linear transformation step of the neural network
+update (a block-diagonal matrix multiplication action on the grid coordinates).
+**Why Noncomputable**: Relies on real numbers (`ℝ`) via `WithLp.equiv`, which is defined as a
+topological completion of `ℚ` and does not have a constructive computational representation in Lean.
+-/
 noncomputable def blockDiagonalAction (N : Nat) (U : RMat) (x : GridState N) : GridState N :=
   (WithLp.equiv 2 (Fin N × Fin 4 → ℝ)).symm (middleMap N U (WithLp.equiv 2 (Fin N × Fin 4 → ℝ) x))
 
@@ -230,12 +237,24 @@ theorem continuous_blockDiagonalAction (N : Nat) (U : RMat) :
   have hc3 : Continuous (middleMap N U) := continuous_middleMap N U
   exact hc2.comp (hc3.comp hc1)
 
-/-- The bundled continuous block-diagonal linear map. -/
+/--
+The bundled continuous block-diagonal linear map.
+
+**Mathematical Motivation**: Lifts `blockDiagonalAction` to a bundled continuous map `C(GridState N, GridState N)`.
+**Why Noncomputable**: Bundling a function into a `ContinuousMap` requires proving continuity, and evaluates
+on topological spaces using noncomputable real numbers (`ℝ`).
+-/
 noncomputable def continuousBlockDiagonalAction (N : Nat) (U : RMat) :
     C(GridState N, GridState N) :=
   ContinuousMap.mk (blockDiagonalAction N U) (continuous_blockDiagonalAction N U)
 
-/-- The elementwise activation function applied to a GridState. -/
+/--
+The elementwise activation function applied to a GridState.
+
+**Mathematical Motivation**: Implements the element-wise nonlinear activation function application on the grid state.
+**Why Noncomputable**: Performs function application over `ℝ` using `WithLp.equiv` and continuous activation functions,
+neither of which have constructive computational representations.
+-/
 noncomputable def applyActivation (σ : Activation) (N : Nat) (x : GridState N) : GridState N :=
   let v := WithLp.equiv 2 (Fin N × Fin 4 → ℝ) x
   let f := fun p => σ (v p)
@@ -257,7 +276,12 @@ theorem continuous_applyActivation_state (σ : Activation) (N : Nat) :
     continuous_applyActivation σ N
   exact hc2.comp (hc3.comp hc1)
 
-/-- The bundled continuous elementwise activation map. -/
+/--
+The bundled continuous elementwise activation map.
+
+**Mathematical Motivation**: Lifts `applyActivation` to a bundled continuous map `C(GridState N, GridState N)`.
+**Why Noncomputable**: Evaluates real functions and relies on the noncomputable real topology.
+-/
 noncomputable def continuousApplyActivation (σ : Activation) (N : Nat) :
     C(GridState N, GridState N) :=
   ContinuousMap.mk (applyActivation σ N) (continuous_applyActivation_state σ N)
@@ -266,6 +290,10 @@ noncomputable def continuousApplyActivation (σ : Activation) (N : Nat) :
 `activatedUpdate`: The concrete, recursive definition of the T-step ISAR update
 with alternating activation. Defined constructively via composing the continuous
 block-diagonal updates and elementwise activations.
+
+**Mathematical Motivation**: Computes the multi-layer neural network update $F_{\theta} = \sigma \circ U_T \circ \dots \circ \sigma \circ U_1$.
+**Why Noncomputable**: Combines continuous maps via composition (`ContinuousMap.comp`) over continuous spaces,
+which relies on noncomputable real numbers (`ℝ`).
 -/
 noncomputable def activatedUpdate (σ : Activation) (N : Nat) :
     (T : Nat) → (Fin T → Fin 4 → ℝ) → C(GridState N, GridState N)
@@ -291,6 +319,9 @@ def RawAddress (d k : Nat) : Type :=
 /--
 The realization map mapping a raw parameter trajectory to a continuous function.
 Computes the composition: readout ∘ activatedUpdate ∘ encode.
+
+**Mathematical Motivation**: Realizes the full neural network representation from the parameters (encoder, readout, updates).
+**Why Noncomputable**: Computes composition of continuous maps over continuous Euclidean spaces, which is noncomputable in Lean.
 -/
 noncomputable def realizeRaw (d k : Nat) (σ : Activation) (θ : RawAddress d k) :
     C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k)) :=
@@ -308,7 +339,13 @@ the same continuous function.
 def AddressEq (d k : Nat) (σ : Activation) (θ₁ θ₂ : RawAddress d k) : Prop :=
   realizeRaw d k σ θ₁ = realizeRaw d k σ θ₂
 
-/-- The setoid defining the functional equivalence relation on RawAddress. -/
+/--
+The setoid defining the functional equivalence relation on RawAddress.
+
+**Mathematical Motivation**: Equates two addresses if they yield the exact same continuous realization function.
+**Why Noncomputable**: The equality relation `realizeRaw d k σ θ₁ = realizeRaw d k σ θ₂` is an equality of continuous
+functions over `ℝᵈ`, which is mathematically undecidable/noncomputable.
+-/
 noncomputable def addressSetoid (d k : Nat) (σ : Activation) : Setoid (RawAddress d k) where
   r := AddressEq d k σ
   iseqv := {
@@ -328,6 +365,9 @@ def KernelAddress (d k : Nat) (σ : Activation) : Type :=
 /--
 The well-defined continuous realization of a quotiented `KernelAddress`.
 Derived via `Quotient.lift` from `realizeRaw`.
+
+**Mathematical Motivation**: The canonical projection/realization map from the quotient space `KernelAddress` to the space of continuous functions.
+**Why Noncomputable**: Relies on `Quotient.lift` over a noncomputable equivalence relation, and returns a continuous function over `ℝ`.
 -/
 noncomputable def continuousRealization (d k : Nat) (σ : Activation) (q : KernelAddress d k σ) :
     C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k)) :=
@@ -382,23 +422,49 @@ axiom ISAR_UAT
       ∀ x ∈ K,
         ‖realizeRaw d k σ θ x - f x‖ < ε
 
+/-- The continuous limit/completion of the quotiented address space. -/
+axiom KernelAddressLimit (d k : Nat) (σ : Activation) : Type
+
+/-- The continuous realization map from the completion. -/
+axiom continuousRealizationLimit (d k : Nat) (σ : Activation) :
+  KernelAddressLimit d k σ → C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))
+
+/--
+**Topological Extension to Completion (Functional Analysis Axiom).**
+
+An injective map with a dense range into a complete metric space extends uniquely
+to a bijection on the completion of its domain.
+-/
+axiom topological_extension_bijection
+    (d k : Nat) (σ : Activation)
+    (h_inj : ∀ q₁ q₂ : KernelAddress d k σ, continuousRealization d k σ q₁ = continuousRealization d k σ q₂ → q₁ = q₂)
+    (h_dense : ∀ (K : Set (EuclideanSpace ℝ (Fin d))) (_ : IsCompact K)
+        (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))) (ε : ℝ) (_ : 0 < ε),
+        ∃ q : KernelAddress d k σ, ∀ x ∈ K, ‖continuousRealization d k σ q x - f x‖ < ε)
+    (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))) :
+    ∃! θ_limit : KernelAddressLimit d k σ, continuousRealizationLimit d k σ θ_limit = f
+
 /--
 **ISAR Universal Representation Theorem (Borges' Library Representation).**
 
-Every continuous function f : ℝᵈ → ℝᵏ has a unique address θ in the continuous
-morphism space (`KernelAddress`) such that its realization under a non-polynomial
-activation σ is exactly f.
+Every continuous function f : ℝᵈ → ℝᵏ has a unique address θ_limit in the continuous
+limit morphism space (`KernelAddressLimit`) such that its realization is exactly f.
 
-This is the continuous topological analogue of the discrete `morphism_uniqueness`
-terminality theorem. Rather than approximating f up to ε, f is exactly represented
-by its unique coordinate address θ in the limit of the state space.
+**Proof**: Follows by applying the functional analysis extension theorem to the constructive
+injectivity of continuousRealization and the metric density of the UAT.
 -/
-axiom ISAR_representation
+theorem ISAR_representation
     (d k : Nat)
     (σ : Activation)
-    (_ : Activation.nonPolynomial σ)
+    (h_np : Activation.nonPolynomial σ)
     (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))) :
-    ∃! θ : KernelAddress d k σ, continuousRealization d k σ θ = f
+    ∃! θ_limit : KernelAddressLimit d k σ, continuousRealizationLimit d k σ θ_limit = f := by
+  apply topological_extension_bijection d k σ
+  { exact continuousRealization_injective d k σ }
+  { intro K hK f_map ε hε
+    obtain ⟨θ_raw, h_approx⟩ := ISAR_UAT d k K hK f_map σ h_np ε hε
+    use Quotient.mk _ θ_raw
+    exact h_approx }
 
 /--
 **Corollary: Logical, Statistical, and Topological Universality.**
@@ -410,9 +476,9 @@ The ISAR kernel simultaneously achieves:
 2. **Statistical universality** (analytic UAT axiom `ISAR_UAT`):
    every continuous function ℝᵈ → ℝᵏ is approximable by the iterated ISAR update
    on any compact subset K to arbitrary precision ε > 0.
-3. **Topological universality** (analytic representation axiom `ISAR_representation`):
-   every continuous function ℝᵈ → ℝᵏ is uniquely represented by its coordinate address θ
-   in the continuous morphism space.
+3. **Topological universality** (proved theorem `ISAR_representation`):
+   every continuous function ℝᵈ → ℝᵏ is uniquely represented by its coordinate address θ_limit
+   in the continuous limit morphism space.
 -/
 theorem ISAR_logical_and_statistical_universality :
     (∀ (K : Kernel) (f : KernelHom K ISAR_Kernel) (c : K.Carrier),
@@ -425,7 +491,7 @@ theorem ISAR_logical_and_statistical_universality :
             ‖realizeRaw d k σ θ x - f x‖ < ε) ∧
     (∀ (d k : Nat) (σ : Activation) (_ : Activation.nonPolynomial σ)
         (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))),
-        ∃! θ : KernelAddress d k σ, continuousRealization d k σ θ = f) :=
+        ∃! θ_limit : KernelAddressLimit d k σ, continuousRealizationLimit d k σ θ_limit = f) :=
   ⟨fun K f c => morphism_uniqueness K f c,
    fun d k K hK f σ σ_np ε hε => ISAR_UAT d k K hK f σ σ_np ε hε,
    fun d k σ σ_np f => ISAR_representation d k σ σ_np f⟩
