@@ -422,10 +422,23 @@ axiom ISAR_UAT
       ∀ x ∈ K,
         ‖realizeRaw d k σ θ x - f x‖ < ε
 
-/-- The continuous limit/completion of the quotiented address space. -/
+/--
+The continuous limit/completion of the quotiented address space.
+
+**Mathematical Motivation**: Represents the metric completion of `KernelAddress d k σ` (with the metric pulled back
+from the supremum metric on $C(\mathbb{R}^d, \mathbb{R}^k)$).
+**Why Axiomatic**: Avoids formalizing the metric space completion construction (`Metric.Completion` / `UniformSpace.Completion`)
+directly on `KernelAddress` in Lean, instead axiomatizing the resulting completion type.
+-/
 axiom KernelAddressLimit (d k : Nat) (σ : Activation) : Type
 
-/-- The continuous realization map from the completion. -/
+/--
+The continuous realization map from the completion.
+
+**Mathematical Motivation**: The unique continuous extension of `continuousRealization` to the completion.
+**Why Axiomatic**: Represents the extension of a uniformly continuous map to the completion (`DenseInducing.extend` in Mathlib).
+Declared axiomatically here to specify its existence and signature directly.
+-/
 axiom continuousRealizationLimit (d k : Nat) (σ : Activation) :
   KernelAddressLimit d k σ → C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))
 
@@ -434,6 +447,14 @@ axiom continuousRealizationLimit (d k : Nat) (σ : Activation) :
 
 An injective map with a dense range into a complete metric space extends uniquely
 to a bijection on the completion of its domain.
+
+**Mathematical Motivation**: This is the standard functional analysis completion theorem (`UniformSpace.Completion.extension`
+paired with injectivity/density facts).
+1. `KernelAddress` is equipped with a metric space structure by pulling back the metric on $C(\mathbb{R}^d, \mathbb{R}^k)$ via `continuousRealization`.
+2. Under this metric, `continuousRealization` is an isometric embedding (hence injective and uniformly continuous).
+3. The image of `continuousRealization` is dense in $C(\mathbb{R}^d, \mathbb{R}^k)$ (by the UAT density axiom on compact domains).
+4. By the properties of metric completions, the unique continuous extension `continuousRealizationLimit` to the completion
+   `KernelAddressLimit` is a bijection, i.e., every continuous function $f$ has a unique limit representative.
 -/
 axiom topological_extension_bijection
     (d k : Nat) (σ : Activation)
