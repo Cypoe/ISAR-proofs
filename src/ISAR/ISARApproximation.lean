@@ -167,19 +167,21 @@ theorem linearIterateR_succ (U : RMat) (n : Nat) :
 /-- **First-order flow property** (consequence of K² = 0). -/
 theorem nilpotent_kills_higher_order : K1R * K1R = 0 := K1R_nilpotent
 
-/-! ## 7. Universal Representation (Continuous Morphism and Address Space) -/
+/-! ## 7. Universal Approximation (Continuous Morphism and Address Space) -/
 
 /-
 We define the topological representation space, which lifts the category-theoretic
-terminality (`morphism_uniqueness`) to the continuous setting. Rather than an external
-curve-fitting approximation (UAT), continuous functions are internally represented as
-unique trajectories through the ISAR state space.
+terminality (`morphism_uniqueness`) to the continuous setting. 
+
+Rather than treating the input/output projections (encode/readout) as fixed global
+axioms, they are existentially quantified as part of the configuration space (RawAddress),
+matching the standard Cybenko/Hornik universal approximation theorem (Option A).
 
 To represent the continuous mapping uniquely, the parameter space is quotiented modulo
 observational (functional) equivalence, mirroring the discrete `InvariantLayer`.
 
 **Axiom inventory** (all intentional — see ADR-003):
-  RawAddress, realizeRaw, ISAR_representation.
+  activatedUpdate, ISAR_UAT.
 -/
 
 /-- A nonlinear activation function: continuous real functions ℝ → ℝ. -/
@@ -194,16 +196,40 @@ def Activation.nonPolynomial (σ : Activation) : Prop :=
   ∀ coeffs : List ℝ, (σ : ℝ → ℝ) ≠ evalPoly coeffs
 
 /--
-The abstract type of raw continuous parameters or trajectories in the ISAR state space.
-Lacks uniqueness due to neural/coordinate symmetries.
+Grid state: N cells, each with a 4-dimensional real state vector.
+`EuclideanSpace ℝ (Fin (4 * N))` is a concrete Mathlib type carrying
+`NormedAddCommGroup`, `InnerProductSpace ℝ`, and all analytic structure.
 -/
-axiom RawAddress (d k : Nat) : Type
+abbrev GridState (N : Nat) := EuclideanSpace ℝ (Fin (4 * N))
+
+/-- T-step ISAR update with alternating activation, returning a continuous map. -/
+axiom activatedUpdate (σ : Activation) (N T : Nat) (θ : Fin T → Fin 4 → ℝ) :
+  C(GridState N, GridState N)
+
+/--
+`RawAddress`: the concrete configuration space representing all finite-grid,
+finite-time neural representations of the ISAR update.
+Contains the grid size N, time steps T, parameter sequence θ, and the bundled
+continuous encoder and readout maps.
+-/
+def RawAddress (d k : Nat) : Type :=
+  Σ (N T : Nat),
+    (Fin T → Fin 4 → ℝ) ×
+    C(EuclideanSpace ℝ (Fin d), GridState N) ×
+    C(GridState N, EuclideanSpace ℝ (Fin k))
 
 /--
 The realization map mapping a raw parameter trajectory to a continuous function.
+Computes the composition: readout ∘ activatedUpdate ∘ encode.
 -/
-axiom realizeRaw (d k : Nat) (σ : Activation) :
-  RawAddress d k → C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))
+noncomputable def realizeRaw (d k : Nat) (σ : Activation) (θ : RawAddress d k) :
+    C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k)) :=
+  let N := θ.1
+  let T := θ.2.1
+  let θ_seq := θ.2.2.1
+  let encode := θ.2.2.2.1
+  let readout := θ.2.2.2.2
+  readout.comp ((activatedUpdate σ N T θ_seq).comp encode)
 
 /--
 Two raw addresses are observationally/functionally equivalent if they realize
@@ -241,41 +267,48 @@ noncomputable def continuousRealization (d k : Nat) (σ : Activation) (q : Kerne
   ) q
 
 /--
-**ISAR Universal Representation Theorem (Borges' Library Representation).**
+**ISAR Universal Approximation Theorem.**
 
-Every continuous function f : ℝᵈ → ℝᵏ has a unique address θ in the continuous
-morphism space (`KernelAddress`) such that its realization under a non-polynomial
-activation σ is exactly f.
+For any continuous function f : ℝᵈ → ℝᵏ, a non-polynomial activation σ,
+and a compact domain K ⊆ ℝᵈ, the finite-grid iterated ISAR update can
+approximate f uniformly on K to arbitrary precision ε > 0.
 
-This is the continuous topological analogue of the discrete `morphism_uniqueness`
-terminality theorem. Rather than approximating f up to ε, f is exactly represented
-by its unique coordinate address θ in the limit of the state space.
+This is the standard Cybenko/Hornik universal approximation theorem applied to the
+ISAR configuration space (RawAddress).
 -/
-axiom ISAR_representation
+axiom ISAR_UAT
     (d k : Nat)
+    (K : Set (EuclideanSpace ℝ (Fin d)))
+    (_ : IsCompact K)
+    (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k)))
     (σ : Activation)
     (_ : Activation.nonPolynomial σ)
-    (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))) :
-    ∃! θ : KernelAddress d k σ, continuousRealization d k σ θ = f
+    (ε : ℝ) (_ : 0 < ε) :
+    ∃ θ : RawAddress d k,
+      ∀ x ∈ K,
+        ‖realizeRaw d k σ θ x - f x‖ < ε
 
 /--
-**Corollary: Logical and Topological Universality.**
+**Corollary: Logical and Statistical Universality.**
 
 The ISAR kernel simultaneously achieves:
 1. **Logical universality** (proved, zero extra axioms):
    `morphism_uniqueness` — every admissible formal rewriting system embeds uniquely
    into ISAR_Kernel.
-2. **Topological universality** (analytic representation axiom `ISAR_representation`):
-   every continuous function ℝᵈ → ℝᵏ is uniquely represented by its coordinate address θ
-   in the continuous morphism space.
+2. **Statistical universality** (analytic UAT axiom `ISAR_UAT`):
+   every continuous function ℝᵈ → ℝᵏ is approximable by the iterated ISAR update
+   on any compact subset K to arbitrary precision ε > 0.
 -/
-theorem ISAR_logical_and_topological_universality :
+theorem ISAR_logical_and_statistical_universality :
     (∀ (K : Kernel) (f : KernelHom K ISAR_Kernel) (c : K.Carrier),
         OperEq (f.hom c) (K.decode c)) ∧
-    (∀ (d k : Nat) (σ : Activation) (_ : Activation.nonPolynomial σ)
-        (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k))),
-        ∃! θ : KernelAddress d k σ, continuousRealization d k σ θ = f) :=
+    (∀ (d k : Nat) (K : Set (EuclideanSpace ℝ (Fin d))) (_ : IsCompact K)
+        (f : C(EuclideanSpace ℝ (Fin d), EuclideanSpace ℝ (Fin k)))
+        (σ : Activation) (_ : Activation.nonPolynomial σ) (ε : ℝ) (_ : 0 < ε),
+        ∃ θ : RawAddress d k,
+          ∀ x ∈ K,
+            ‖realizeRaw d k σ θ x - f x‖ < ε) :=
   ⟨fun K f c => morphism_uniqueness K f c,
-   fun d k σ σ_np f => ISAR_representation d k σ σ_np f⟩
+   fun d k K hK f σ σ_np ε hε => ISAR_UAT d k K hK f σ σ_np ε hε⟩
 
 end ISAR
