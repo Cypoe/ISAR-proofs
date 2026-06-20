@@ -153,7 +153,7 @@ noncomputable def decode (q : Quantity) : ISKSubtype :=
   InvariantLayer.canonical_rep (natToLayer (quantityToNat q))
 
 /-- Equivalence on Quantity is standard equality. -/
-def quantity_eq_equivalence : Equivalence (fun (x y : Quantity) => x = y) where
+theorem quantity_eq_equivalence : Equivalence (fun (x y : Quantity) => x = y) where
   refl _ := rfl
   symm h := h.symm
   trans h1 h2 := h1.trans h2

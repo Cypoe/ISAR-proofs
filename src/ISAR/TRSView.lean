@@ -68,7 +68,7 @@ def trs_obs_eq (t1 t2 : TTerm) : Prop :=
   OperEq (trs_encode t1) (trs_encode t2)
 
 /-- Proof that `trs_obs_eq` is an equivalence relation. -/
-def trs_obs_equiv : Equivalence trs_obs_eq where
+theorem trs_obs_equiv : Equivalence trs_obs_eq where
   refl t := OperEq.refl (trs_encode t)
   symm h := OperEq.symm h
   trans h1 h2 := OperEq.trans h1 h2

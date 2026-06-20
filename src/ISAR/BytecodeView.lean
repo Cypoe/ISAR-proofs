@@ -99,7 +99,7 @@ def bytecode_obs_eq (p1 p2 : List Instruction) : Prop :=
   OperEq (trs_encode (compile_bytecode p1)) (trs_encode (compile_bytecode p2))
 
 /-- Observational equivalence is a setoid. -/
-def bytecode_obs_equiv : Equivalence bytecode_obs_eq where
+theorem bytecode_obs_equiv : Equivalence bytecode_obs_eq where
   refl p := OperEq.refl (trs_encode (compile_bytecode p))
   symm h := OperEq.symm h
   trans h1 h2 := OperEq.trans h1 h2

@@ -1,4 +1,7 @@
 *.olean
+.bin/
+.pytest_cache/
+.__pycache__/
 .lake/
 
 blueprint/print
@@ -7,3 +10,5 @@ blueprint/lean_decls
 
 blueprint/src/print.pdf
 blueprint/src/web.paux
+
+isar_proofs.egg-info/

@@ -70,7 +70,7 @@ def iota_obs_eq (t1 t2 : IotaTerm) : Prop :=
   OperEq (iota_encode t1) (iota_encode t2)
 
 /-- Proof that `iota_obs_eq` is an equivalence relation. -/
-def iota_obs_equiv : Equivalence iota_obs_eq where
+theorem iota_obs_equiv : Equivalence iota_obs_eq where
   refl t := OperEq.refl (iota_encode t)
   symm h := OperEq.symm h
   trans h1 h2 := OperEq.trans h1 h2

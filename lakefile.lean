@@ -9,15 +9,15 @@ package «isar» where
   ]
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git"
-
-require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
-
-meta if get_config? env = some "dev" then
-require «doc-gen4» from git
-  "https://github.com/leanprover/doc-gen4" @ "main"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.31.0"
 
 @[default_target]
 lean_lib «ISAR» where
   srcDir := "src"
   roots := #[`ISAR]
+
+require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
+
+-- mlake buiketa if get_config? env = some "dev" then
+require «doc-gen4» from git
+  "https://github.com/leanprover/doc-gen4" @ "v4.31.0"

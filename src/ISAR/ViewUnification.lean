@@ -448,7 +448,7 @@ theorem system_decode_eq (D : ConfluentSNSystem) (o1 o2 : D.Object) (h : OperEq_
   rw [h_sig1, h_sig2, heq_nf]
   exact OperEq.refl _
 
-def OperEq_D_equiv (D : ConfluentSNSystem) : Equivalence (OperEq_D D.step) where
+theorem OperEq_D_equiv (D : ConfluentSNSystem) : Equivalence (OperEq_D D.step) where
   refl := OperEq_D_refl D.step
   symm := OperEq_D_symm D.step
   trans := OperEq_D_trans D.step D.confluent
