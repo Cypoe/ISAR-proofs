@@ -45,31 +45,36 @@ jobs:
           lint: false
           mk_all-check: false
 
-      - name: Install TeX Live (latexmk + bibtex)
+      - name: Install TeX Live
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            texlive-latex-base texlive-latex-extra texlive-fonts-recommended \
-            texlive-science latexmk
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science \
+            latexmk
 
       - name: Compile all blueprint PDFs
         working-directory: blueprint/src
         run: |
-          latexmk -pdf -interaction=nonstopmode print_monograph.tex || true
-          latexmk -pdf -interaction=nonstopmode print_monograph.tex || true
-          latexmk -pdf -interaction=nonstopmode print_paper_a.tex   || true
-          latexmk -pdf -interaction=nonstopmode print_paper_a.tex   || true
-          latexmk -pdf -interaction=nonstopmode print_paper_b.tex   || true
-          latexmk -pdf -interaction=nonstopmode print_paper_b.tex   || true
-          latexmk -pdf -interaction=nonstopmode print_paper_c.tex   || true
-          latexmk -pdf -interaction=nonstopmode print_paper_c.tex   || true
+          latexmk -pdf -interaction=nonstopmode print_monograph.tex
+          latexmk -pdf -interaction=nonstopmode print_monograph.tex
+          latexmk -pdf -interaction=nonstopmode print_paper_a.tex
+          latexmk -pdf -interaction=nonstopmode print_paper_a.tex
+          latexmk -pdf -interaction=nonstopmode print_paper_b.tex
+          latexmk -pdf -interaction=nonstopmode print_paper_b.tex
+          latexmk -pdf -interaction=nonstopmode print_paper_c.tex
+          latexmk -pdf -interaction=nonstopmode print_paper_c.tex
 
       - name: Copy PDFs and assets into home_page for Jekyll
         run: |
-          cp blueprint/src/print_monograph.pdf home_page/blueprint.pdf
-          cp blueprint/src/print_paper_a.pdf   home_page/blueprint_paper_a.pdf
-          cp blueprint/src/print_paper_b.pdf   home_page/blueprint_paper_b.pdf
-          cp blueprint/src/print_paper_c.pdf   home_page/blueprint_paper_c.pdf
+          mkdir -p home_page/pdf
+          cp blueprint/src/print_monograph.pdf home_page/pdf/blueprint_monograph.pdf
+          cp blueprint/src/print_paper_a.pdf   home_page/pdf/blueprint_paper_a.pdf
+          cp blueprint/src/print_paper_b.pdf   home_page/pdf/blueprint_paper_b.pdf
+          cp blueprint/src/print_paper_c.pdf   home_page/pdf/blueprint_paper_c.pdf
           cp -r zoo/            home_page/zoo/
           cp -r visualizations/ home_page/visualizations/
 
