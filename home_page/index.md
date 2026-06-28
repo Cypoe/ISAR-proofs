@@ -1,62 +1,62 @@
 ---
 layout: default
 title: "ISAR: Invariant Kernel for Closed Computational Dialects"
-description: "A formally verified quotient-mediated semantic kernel in Lean 4: unifying lambda calculus, term rewriting, bytecode, and set-theoretic views under a single algebraic substrate."
+description: "A Lean 4 formalization of a combinatory substrate whose observational quotient is the terminal object in the category of closed computational dialects."
 usemathjax: true
 ---
 
 # ISAR: Invariant Kernel for Closed Computational Dialects
 
-**ISAR** is a Lean 4 formalization of a minimal combinatory substrate whose operational quotient &mdash; the **Invariant Layer** &mdash; is the terminal object in the category of closed computational dialects. Lambda calculus, term rewriting systems, stack VM bytecode, hereditarily finite sets, and linear interaction nets all factor uniquely through this quotient via structure-preserving morphisms. Every theorem is machine-checked and **sorry-free**.
+**ISAR** is a Lean 4 formalization of a four-operator combinatory calculus (`norm`, `konst`, `comp`, `dup`) and its observational quotient, the **Invariant Layer** (`InvariantLayer := ISKSubtype / OperEq`). The central result is `morphism_uniqueness`: the Invariant Layer is the terminal object in the category of admissible semantic kernels, so every closed dialect &mdash; lambda calculus, term rewriting, stack bytecode, hereditarily finite sets, linear interaction nets &mdash; admits a unique structure-preserving morphism into it. All theorems are machine-checked in Lean 4 with no `sorry`.
 
 ---
 
-## Project Links
+## Project
 
-* **[Interactive Blueprint](./blueprint/)** &mdash; Dependency graph of definitions and theorems, with Lean verification status per node.
-* **[Blueprint Monograph PDF](./pdf/blueprint_monograph.pdf)** &mdash; Full monograph: all 22 modules, all phases.
-* **[Blueprint PDF &mdash; Paper A](./pdf/blueprint_paper_a.pdf)** &mdash; Core calculus, invariant layer, category theory, and dialect views.
-* **[Blueprint PDF &mdash; Paper B](./pdf/blueprint_paper_b.pdf)** &mdash; Set-theoretic interpretation, view pluralism, Futamura projections.
-* **[Blueprint PDF &mdash; Paper C](./pdf/blueprint_paper_c.pdf)** &mdash; Linear duplication, optimal kernels, matrix geometry, metric completion.
-* **[Lean API Docs](./docs/)** &mdash; Auto-generated documentation for the Lean 4 codebase.
-* **[Formal Systems Zoo](./zoo/)** &mdash; Interactive explorer: SKI, Iota, lambda, TRS, bytecode, and dialect morphisms.
-* **[Demos &amp; Visualizations](./visualizations/)** &mdash; Kernel geometry, invariant layer diagrams, and combinator reduction flows.
-* **[GitHub Source](https://github.com/cypoe/isar-proofs)** &mdash; Complete Lean 4 source and proof files.
+* **[Interactive Blueprint](./blueprint/)** &mdash; Theorem dependency graph with per-node Lean verification status.
+* **[Monograph PDF](./pdf/blueprint_monograph.pdf)** &mdash; Full monograph: all modules and phases.
+* **[Paper A PDF](./pdf/blueprint_paper_a.pdf)** &mdash; Calculus, confluence, Invariant Layer, category-theoretic terminality, dialect views.
+* **[Paper B PDF](./pdf/blueprint_paper_b.pdf)** &mdash; HF set interpretation, view pluralism, Futamura projections.
+* **[Paper C PDF](./pdf/blueprint_paper_c.pdf)** &mdash; Linear duplication, optimal kernels, matrix geometry, metric completion.
+* **[Lean API Docs](./docs/)** &mdash; Generated documentation for the Lean 4 source.
+* **[Formal Systems Zoo](./zoo/)** &mdash; Executable dialect explorer: SKI, Iota, lambda, TRS, bytecode.
+* **[Demos](./visualizations/)** &mdash; Kernel geometry and invariant layer interactive diagrams.
+* **[GitHub](https://github.com/cypoe/isar-proofs)** &mdash; Source, proofs, and build instructions.
 
 ---
 
-## Four Verified Pillars
+## Four Verified Results
 
-### 1. Symbolic Calculus & Confluence
-The base untyped combinatory fragment (`ITerm`) with its four operators &mdash; identity `norm`, constant `konst`, composition `comp`, duplication `dup` &mdash; is proven confluent with unique normal forms. The $S$ combinator is constructively derived from the basis, and a bracket-abstraction compiler maps de Bruijn lambda terms to the substrate while preserving beta-reduction steps.
+### 1. Confluence and Normal Forms
+The `ITerm` calculus with operators `norm`, `konst`, `comp`, `dup` is proven confluent: every term has at most one normal form. `S` is constructively derived from the basis. A bracket-abstraction compiler maps de Bruijn lambda terms to `ITerm` and is proven to preserve beta-reduction steps.
 
-### 2. Invariant Layer & Category-Theoretic Terminality
-The quotient `InvariantLayer := ISKSubtype / OperEq` is the bisimulation final coalgebra of the substrate's observable functor. `morphism_uniqueness` proves it is the **terminal object** in the category of semantic kernels: every admissible closed dialect maps into it via a unique structure-preserving morphism. ZFC/HF-sets, TRS, bytecode, and physical quantities all factor through this single quotient.
+### 2. Terminality of the Invariant Layer
+`InvariantLayer := ISKSubtype / OperEq` is proven to be the terminal object in the category of admissible semantic kernels (`morphism_uniqueness`). Lambda, TRS, bytecode, HF-set, and quantity-kernel interpretations each yield a unique factorization morphism. The layer is not postulated as a universal structure; it is derived as the quotient of a concrete calculus and proven terminal within a formally stated category.
 
-### 3. Futamura Projections & Partial Evaluation
-Substitution and partial evaluation are formalized over `ITerm`. The **First**, **Second**, and **Third Futamura Projections** are constructively proved: specialization soundness, compiler generation from a specializer applied to an interpreter, and compiler-generator (`cogen`) generation from self-application of the specializer.
+### 3. Futamura Projections
+Substitution and partial evaluation are formalized over `ITerm`. The three Futamura projections are constructively proven: (1) specialization soundness, (2) compiler derivation from a specializer applied to an interpreter, (3) compiler-generator (`cogen`) derivation from self-application of the specializer.
 
-### 4. Linear Duplication, Optimal Kernels & Matrix Geometry
-The linear duplication fragment (`LinearIKTerm`) admits a fuel certificate (`sufficient_fuel_correct`) proving bounded-time normalization &mdash; directly isomorphic to HVM2 linear interaction net reduction. The $4 \times 4$ ISAR matrices satisfy $I^2 = I$ (idempotency) and $(I \cdot R \cdot A \cdot S)^2 = 0$ (nilpotency), and gauge equivalence $P K_1 P^{-1} = K_2$ unifies the two representation models.
+### 4. Linear Reduction, Matrix Geometry, Metric Completion
+`LinearIKTerm` admits a bounded-fuel normalization certificate (`sufficient_fuel_correct`), structurally isomorphic to HVM2 interaction net reduction. The $4 \times 4$ ISAR operator matrices satisfy $I^2 = I$ (idempotency) and $(I \cdot R \cdot A \cdot S)^2 = 0$ (nilpotency). Gauge equivalence $P K_1 P^{-1} = K_2$ is proven, unifying two matrix representations of the same kernel. Metric completion and a formalized Universal Approximation result are given in `ISARApproximation.lean`; these are currently the least-constrained results in the project.
 
 ---
 
 ## Module Status
 
-| Lean Module | Role | Status |
+| Lean Module | Content | Status |
 | :--- | :--- | :--- |
 | `ISAR.lean` | Syntax, reduction, confluence, basis completeness | **Verified** |
-| `InvariantLayer.lean` | Quotient, linear fragment, optimal fuel certificate | **Verified** |
+| `InvariantLayer.lean` | Quotient construction, linear fragment, fuel certificate | **Verified** |
 | `LambdaFragment.lean` | Bracket abstraction, beta-simulation | **Verified** |
 | `TensorSemantics.lean` | Tensor denotation, compositionality, separation | **Verified** |
-| `KernelCategory.lean` | Terminal object, computable/optimal kernels | **Verified** |
-| `HFSet.lean` + `ZFCInterpretation.lean` | HF set axioms, Ackermann bijection, HF kernel | **Verified** |
-| `TRSView.lean`, `BytecodeView.lean`, `QuantityKernel.lean` | Dialect views, universal factorization | **Verified** |
-| `ViewIndependence.lean`, `ViewUnification.lean` | No-preferred-syntax theorem, isomorphism unification | **Verified** |
+| `KernelCategory.lean` | Terminal object, `morphism_uniqueness` | **Verified** |
+| `HFSet.lean`, `ZFCInterpretation.lean` | HF set axioms, Ackermann bijection, HF kernel morphism | **Verified** |
+| `TRSView.lean`, `BytecodeView.lean`, `QuantityKernel.lean` | Dialect morphisms, universal factorization | **Verified** |
+| `ViewIndependence.lean`, `ViewUnification.lean` | Syntax-independence theorem, isomorphism unification | **Verified** |
 | `ReverseRosetta.lean` | Forward invariance, referential openness | **Verified** |
 | `Futamura.lean` | Three Futamura projections | **Verified** |
 | `ISARMatrices.lean` | Idempotency, nilpotency, gauge equivalence | **Verified** |
-| `ISARApproximation.lean` | Metric completion, UAT, physical attractors | **Verified** |
+| `ISARApproximation.lean` | Metric completion, UAT, attractor structure | **Verified** |
 
 ---
 
@@ -68,18 +68,22 @@ cd isar-proofs
 lake build
 ```
 
-Blueprint (PDF + HTML):
+Blueprint PDFs (run twice each for cross-references):
 
 ```bash
-cd blueprint
-latexmk -pdf src/print_monograph.tex   # full monograph (run twice)
-latexmk -pdf src/print_paper_a.tex     # paper A
-latexmk -pdf src/print_paper_b.tex     # paper B
-latexmk -pdf src/print_paper_c.tex     # paper C
-plastex -c src/plastex.cfg src/web.tex # HTML blueprint
+latexmk -pdflatex=pdflatex -pdf blueprint/src/print_monograph.tex
+latexmk -pdflatex=pdflatex -pdf blueprint/src/print_paper_a.tex
+latexmk -pdflatex=pdflatex -pdf blueprint/src/print_paper_b.tex
+latexmk -pdflatex=pdflatex -pdf blueprint/src/print_paper_c.tex
 ```
 
-Validate all blueprint declarations against Lean source:
+HTML blueprint:
+
+```bash
+plastex -c blueprint/src/plastex.cfg blueprint/src/web.tex
+```
+
+Check all blueprint declarations against Lean source:
 
 ```bash
 lake exe checkdecls blueprint/lean_decls
