@@ -10,7 +10,7 @@
 \newtheorem{corollary}{Corollary}
 \newtheorem{remark}{Remark}
 
-\title{ISAR: A Quotient-Mediated Semantic Kernel for Closed Dialects}
+\title{ISAR: Invariant Kernel for Closed Computational Dialects}
 \author{Fabian Schindler}
 \date{\today}
 
@@ -22,15 +22,15 @@
 \providecommand{\leanok}{}
 \providecommand{\uses}[1]{}
 
-\home{https://github.com/Cypoe/ISAR-proofs}
+\home{https://cypoe.github.io/isar-proofs/}
 \github{https://github.com/Cypoe/ISAR-proofs}
-\dochome{https://github.com/Cypoe/ISAR-proofs}
+\dochome{https://cypoe.github.io/isar-proofs/docs/}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-This paper presents the ISAR framework, a closed combinatory substrate designed to unify disjoint computational models under a single algebraic setting. We formally prove that the quotient \texttt{InvariantLayer} is the view-independent invariant layer of the substrate. Furthermore, we establish that the representation process for any admissible closed dialect yields an $\text{Encoder} \to \text{Kernel} \to \text{Quotient} \to \text{Decoder}$ factorization, showing that different formalisms and programming languages function as decoders over the same invariant structure.
+ISAR is a minimal combinatory substrate whose operational quotient --- the \textbf{Invariant Layer} --- is provably the terminal object in the category of closed computational dialects. We formally establish that lambda calculus, term rewriting systems, stack VM bytecode, hereditarily finite sets, and linear interaction nets all admit unique structure-preserving morphisms into this quotient. The factorization pattern $\text{Encoder} \to \text{Kernel} \to \text{Quotient} \to \text{Decoder}$ is machine-verified in Lean~4: different formalisms are precisely the decoders over the same invariant algebraic structure.
 \end{abstract}
 
 \input{content.tex}
