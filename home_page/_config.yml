@@ -1,6 +1,6 @@
 title: "ISAR: Invariant Kernel for Closed Computational Dialects"
 description: by Fabian Schindler
-baseurl: ""
+baseurl: "/isar-proofs"
 url: "https://cypoe.github.io"
 twitter_username:
 github_username: cypoe
@@ -14,3 +14,4 @@ plugins:
 include:
   - zoo
   - visualizations
+  - pdf

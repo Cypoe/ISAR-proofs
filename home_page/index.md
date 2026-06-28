@@ -13,14 +13,14 @@ usemathjax: true
 
 ## Project
 
-* **[Interactive Blueprint](./blueprint/)** &mdash; Theorem dependency graph with per-node Lean verification status.
-* **[Monograph PDF](./pdf/blueprint_monograph.pdf)** &mdash; Full monograph: all modules and phases.
-* **[Paper A PDF](./pdf/blueprint_paper_a.pdf)** &mdash; Calculus, confluence, Invariant Layer, category-theoretic terminality, dialect views.
-* **[Paper B PDF](./pdf/blueprint_paper_b.pdf)** &mdash; HF set interpretation, view pluralism, Futamura projections.
-* **[Paper C PDF](./pdf/blueprint_paper_c.pdf)** &mdash; Linear duplication, optimal kernels, matrix geometry, metric completion.
-* **[Lean API Docs](./docs/)** &mdash; Generated documentation for the Lean 4 source.
-* **[Formal Systems Zoo](./zoo/)** &mdash; Executable dialect explorer: SKI, Iota, lambda, TRS, bytecode.
-* **[Demos](./visualizations/)** &mdash; Kernel geometry and invariant layer interactive diagrams.
+* **[Interactive Blueprint]({{ site.baseurl }}/blueprint/)** &mdash; Theorem dependency graph with per-node Lean verification status.
+* **[Monograph PDF]({{ site.baseurl }}/pdf/blueprint_monograph.pdf)** &mdash; Full monograph: all modules and phases.
+* **[Paper A PDF]({{ site.baseurl }}/pdf/blueprint_paper_a.pdf)** &mdash; Calculus, confluence, Invariant Layer, category-theoretic terminality, dialect views.
+* **[Paper B PDF]({{ site.baseurl }}/pdf/blueprint_paper_b.pdf)** &mdash; HF set interpretation, view pluralism, Futamura projections.
+* **[Paper C PDF]({{ site.baseurl }}/pdf/blueprint_paper_c.pdf)** &mdash; Linear duplication, optimal kernels, matrix geometry, metric completion.
+* **[Lean API Docs]({{ site.baseurl }}/docs/)** &mdash; Generated documentation for the Lean 4 source.
+* **[Formal Systems Zoo]({{ site.baseurl }}/zoo/)** &mdash; Executable dialect explorer: SKI, Iota, lambda, TRS, bytecode.
+* **[Demos]({{ site.baseurl }}/visualizations/)** &mdash; Kernel geometry and invariant layer interactive diagrams.
 * **[GitHub](https://github.com/cypoe/isar-proofs)** &mdash; Source, proofs, and build instructions.
 
 ---

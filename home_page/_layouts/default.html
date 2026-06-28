@@ -30,11 +30,11 @@
     <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
     <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline
       }}</h2>
-    <a href="blueprint" class="btn">Blueprint (web)</a>
-    <a href="blueprint.pdf" class="btn">Blueprint (PDF)</a>
-    <a href="docs" class="btn">Documentation</a>
-    <a href="visualizations" class="btn">Demos</a>
-    <a href="zoo" class="btn">Zoo</a>
+    <a href="{{ site.baseurl }}/blueprint/" class="btn">Blueprint (web)</a>
+    <a href="{{ site.baseurl }}/pdf/blueprint_monograph.pdf" class="btn">Blueprint (PDF)</a>
+    <a href="{{ site.baseurl }}/docs/" class="btn">Documentation</a>
+    <a href="{{ site.baseurl }}/visualizations/" class="btn">Demos</a>
+    <a href="{{ site.baseurl }}/zoo/" class="btn">Zoo</a>
     {% if site.github.is_project_page %}
     <a href="{{ site.github.repository_url }}" class="btn">GitHub</a>
     {% endif %}
